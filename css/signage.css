@@ -1,0 +1,32 @@
+body {
+    background-color: #f0f2f5;
+    font-family: 'Sarabun', sans-serif;
+    color: #333;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+}
+.signage-header {
+    background-color: #ffffff;
+    padding: 10px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 2px solid #ddd;
+    flex-shrink: 0;
+}
+.signage-header img { height: 60px; }
+#clock { font-size: 1.5em; font-weight: bold; text-align: right; color: #00854a; }
+#signage-board { display: flex; flex-grow: 1; gap: 10px; padding: 10px; }
+.doctor-column { flex: 1; background-color: #fff; border-radius: 10px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); display: flex; flex-direction: column; overflow: hidden; }
+.doctor-header { padding: 15px; color: #343a40; }
+.doctor-header h3 { margin: 0; font-size: 1.8em; font-weight: 700; }
+.patient-list { padding: 15px; overflow-y: auto; flex-grow: 1; }
+.patient-card { background-color: #e9ecef; border-radius: 8px; padding: 20px; margin-bottom: 15px; border-left: 8px solid #00854a; }
+.patient-name { font-size: 2.2em; font-weight: bold; }
+.room-name { font-size: 1.5em; color: #555; margin-top: 5px; }
+.no-patient { display: flex; align-items: center; justify-content: center; height: 100%; font-size: 1.5em; color: #aaa; }
+@keyframes flash-bg { 0% { background-color: #ffc107; } 50% { background-color: #fff3cd; } 100% { background-color: #ffc107; } }
+.flashing-alert { animation: flash-bg 1.5s infinite; border-left-color: #dc3545 !important; }
+

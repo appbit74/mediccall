@@ -1,0 +1,39 @@
+.patient-card {
+    transition: box-shadow .3s ease-in-out;
+}
+.patient-card:hover {
+    box-shadow: 0 0.5rem 1rem rgba(0,0,0,.15)!important;
+}
+
+/* Animation สำหรับเคาน์เตอร์ */
+@keyframes flash-payment {
+    0% { background-color: #d1e7dd; } /* success-light */
+    50% { background-color: #ffffff; }
+    100% { background-color: #d1e7dd; }
+}
+.flashing {
+    animation: flash-payment 1.5s infinite;
+}
+
+/* Animation สำหรับหน้าจอแพทย์ */
+@keyframes flash-doctor-alert {
+    0% { background-color: #fff3cd; } /* warning-light */
+    50% { background-color: #ffffff; }
+    100% { background-color: #fff3cd; }
+}
+.flashing-doctor-alert {
+    animation: flash-doctor-alert 1.5s infinite;
+    border-left: 5px solid #ffc107; /* warning */
+}
+
+/* Animation สำหรับเคสที่แพทย์ส่งกลับ */
+@keyframes flash-returned {
+    0% { background-color: #cfe2ff; } /* primary-light */
+    50% { background-color: #ffffff; }
+    100% { background-color: #cfe2ff; }
+}
+.flashing-returned-alert {
+    animation: flash-returned 1.5s infinite;
+    border-left: 5px solid #0d6efd; /* primary */
+}
+
