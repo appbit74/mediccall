@@ -1,5 +1,6 @@
 {
     "require": {
-        "pear/http_request2": "^2.7"
+        "pear/http_request2": "^2.7",
+        "minishlink/web-push": "^8.0"
     }
 }
