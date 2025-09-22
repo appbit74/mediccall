@@ -1,5 +1,11 @@
 $(document).ready(function() {
-    let previousState = { counterPayment: 0, therapistAllIds: new Set(), doctorWaitingIds: new Set() };
+    // ตัวแปรสำหรับจดจำสถานะล่าสุดของแต่ละคิว เพื่อใช้ในการแจ้งเตือน
+    let previousState = {
+        therapistAllIds: new Set(),
+        doctorWaitingIds: new Set(),
+        // <<-- [แก้ไข] เปลี่ยนจากนับจำนวน เป็นจดจำ ID -->>
+        counterPaymentIds: new Set() 
+    };
     let userHasInteracted = false;
     $(document).one('click', () => { userHasInteracted = true; });
 
@@ -23,11 +29,23 @@ $(document).ready(function() {
     }
     
     function getInitialData(role) { $.getJSON(`api/data_handler.php?view=${role}`, (data) => updateView(role, data)); }
+    
+    /**
+     * ฟังก์ชันกลางสำหรับวาดหน้าจอและจัดการการแจ้งเตือน
+     * @param {string} role 
+     * @param {object} data - ข้อมูลใหม่ที่ได้รับจากเซิร์ฟเวอร์
+     */
     function updateView(role, data) {
         switch (role) {
             case 'counter':
-                if (data.payment_pending && data.payment_pending.length > previousState.counterPayment) { playSound('payment-sound'); }
-                previousState.counterPayment = data.payment_pending ? data.payment_pending.length : 0;
+                // <<-- [แก้ไข] ตรรกะการแจ้งเตือนของเคาน์เตอร์ใหม่ทั้งหมด -->>
+                const currentPaymentIds = new Set((data.payment_pending || []).map(p => p.id));
+                const newPaymentIds = new Set([...currentPaymentIds].filter(id => !previousState.counterPaymentIds.has(id)));
+                if (newPaymentIds.size > 0) {
+                    playSound('payment-sound');
+                }
+                previousState.counterPaymentIds = currentPaymentIds;
+                
                 populateColumn('#new-patients-col', data.new_patients, createCounterNewCard, 'ไม่มีคนไข้ใหม่');
                 populateColumn('#in-process-col', data.in_process_patients, createCounterInProcessCard, 'ไม่มีคนไข้ในกระบวนการ');
                 populateColumn('#payment-pending-col', data.payment_pending, createCounterPaymentCard, 'ไม่มีคนไข้รอชำระเงิน');
@@ -56,7 +74,15 @@ $(document).ready(function() {
     function getUserRoleFromCookie() { try { const c = document.cookie.split('; ').find(r => r.startsWith('user_data=')); return JSON.parse(decodeURIComponent(c.split('=')[1])).role; } catch (e) { return null; } }
     function playSound(soundId) { if (!userHasInteracted) return; const soundElement = document.getElementById(soundId); if (soundElement) { soundElement.play().catch(error => console.error("Error playing sound:", error)); } }
     function populateColumn(selector, data, cardCreator, emptyMsg) { const col = $(selector).empty(); if (!data || data.length === 0) { col.html(`<p class="text-muted text-center">${emptyMsg}</p>`); return; } $.each(data, (i, item) => col.append(cardCreator(item))); }
-    function handleAction(action, data, modalInstance = null) { data.action = action; $.post('api/action_handler.php', data, (res) => { if (res.status !== 'success') { alert('เกิดข้อผิดพลาด: ' + (res.message || 'ไม่ทราบสาเหตุ')); } if(modalInstance) modalInstance.hide(); }, 'json').fail(() => alert('การเชื่อมต่อเซิร์ฟเวอร์ล้มเหลว')); }
+    function handleAction(action, data, modalInstance = null) {
+        data.action = action;
+        $.post('api/action_handler.php', data, (res) => {
+            if (res.status !== 'success') {
+                alert('เกิดข้อผิดพลาด: ' + (res.message || 'ไม่ทราบสาเหตุ'));
+            }
+            if(modalInstance) modalInstance.hide();
+        }, 'json').fail(() => alert('การเชื่อมต่อเซิร์ฟเวอร์ล้มเหลว'));
+    }
 
     function createCounterNewCard(p) { return `<div class="card patient-card mb-2"><div class="card-body"><h5 class="card-title">${p.patient_name}</h5><p class="card-text">HN: ${p.patient_hn}</p><button class="btn btn-sm btn-primary btn-process-patient" data-id="${p.id}">ดำเนินการ</button></div></div>`; }
     function createCounterInProcessCard(p) { 
