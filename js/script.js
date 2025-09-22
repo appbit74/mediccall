@@ -1,10 +1,8 @@
 $(document).ready(function() {
-    // <<-- [แก้ไข] ย้ายการประกาศตัวแปรและฟังก์ชันที่เกี่ยวข้องกับ Loader มาไว้บนสุด -->>
     const loader = $('#loading-overlay');
     function showLoader() { loader.fadeIn(200); }
     function hideLoader() { loader.fadeOut(200); }
 
-    // ตัวแปรสำหรับจดจำสถานะล่าสุดของแต่ละคิว เพื่อใช้ในการแจ้งเตือน
     let previousState = { counterPaymentIds: new Set(), therapistAllIds: new Set(), doctorWaitingIds: new Set() };
     let userHasInteracted = false;
     $(document).one('click', () => { userHasInteracted = true; });
@@ -104,7 +102,15 @@ $(document).ready(function() {
     }
 
     $('#manual-sync-btn').on('click', function() { showLoader(); const btn = $(this); btn.prop('disabled', true); $.getJSON('api/data_handler.php?action=manual_sync').always(() => { hideLoader(); btn.prop('disabled', false); }); });
-    $(document).on('click', '#doctor-reload-btn, #therapist-reload-btn', function() { showLoader(); const btn = $(this); const roleToReload = btn.attr('id').split('-')[0]; btn.prop('disabled', true); getInitialData(roleToReload).always(() => btn.prop('disabled', false)); });
+    $(document).on('click', '#doctor-reload-btn, #therapist-reload-btn', function() {
+        showLoader();
+        const btn = $(this);
+        const roleToReload = btn.attr('id').split('-')[0];
+        btn.prop('disabled', true);
+        getInitialData(roleToReload).always(() => {
+            btn.prop('disabled', false);
+        });
+    });
     
     $(document).on('click', '.btn-process-patient', function() { handleAction('process_patient', { patient_id: $(this).data('id') }); });
     $(document).on('click', '.btn-notify-doctor', function() { handleAction('notify_doctor', { patient_id: $(this).data('id') }); });
