@@ -10,7 +10,7 @@
     <link href="css/style.css" rel="stylesheet">
 </head>
 <body>
-<!-- <<-- [ใหม่] Loading Animation Overlay -->>
+<!-- <<-- [ใหม่] Loading Animation Overlay -->
 <div id="loading-overlay">
     <div class="spinner"></div>
 </div>
