@@ -10,16 +10,21 @@
     <link href="css/style.css" rel="stylesheet">
 </head>
 <body>
+<!-- <<-- [ใหม่] Loading Animation Overlay -->>
+<div id="loading-overlay">
+    <div class="spinner"></div>
+</div>
+
 <audio id="notification-sound" src="assets/sounds/notification.mp3" preload="auto"></audio>
 <audio id="payment-sound" src="assets/sounds/payment.mp3" preload="auto"></audio>
 
 <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
     <div class="container-fluid">
         <a class="navbar-brand" href="index.php">
-            <img src="https://salary.psrehabccenter.com/datas/images/logo.png" alt="Logo" width="150"> Queue System
+            <img src="https://salary.psrehabccenter.com/datas/images/logo.png" alt="Logo" height="40"> 
+            Queue System
         </a>
         <div class="d-flex align-items-center">
-            <!-- <<-- [เพิ่ม] ลิงก์ไปยังหน้าจอ Signage -->>
             <a href="signage.php" target="_blank" class="btn btn-info btn-sm me-3">
                 <i class="bi bi-tv"></i> Open Signage
             </a>
@@ -31,5 +36,4 @@
     </div>
 </nav>
 <div class="container-fluid mt-4">
-
 

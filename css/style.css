@@ -1,39 +1,72 @@
+/* <<-- [ใหม่] Loading Animation Styles -->> */
+#loading-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(255, 255, 255, 0.7);
+    z-index: 9999;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    backdrop-filter: blur(3px);
+    -webkit-backdrop-filter: blur(3px);
+    display: none; /* ซ่อนไว้เป็นค่าเริ่มต้น */
+}
+
+.spinner {
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    border: 9px solid #f3f3f3; /* Light grey */
+    border-top-color: #00854a; /* PS Rehab Green */
+    animation: spin 1s ease-in-out infinite;
+    -webkit-animation: spin 1s ease-in-out infinite;
+}
+
+@keyframes spin {
+    to { -webkit-transform: rotate(360deg); }
+}
+@-webkit-keyframes spin {
+    to { -webkit-transform: rotate(360deg); }
+}
+
+
+/* Existing Styles */
 .patient-card {
     transition: box-shadow .3s ease-in-out;
 }
 .patient-card:hover {
     box-shadow: 0 0.5rem 1rem rgba(0,0,0,.15)!important;
 }
-
-/* Animation สำหรับเคาน์เตอร์ */
+.card-body {
+    min-height: 200px;
+}
 @keyframes flash-payment {
-    0% { background-color: #d1e7dd; } /* success-light */
+    0% { background-color: #d1e7dd; }
     50% { background-color: #ffffff; }
     100% { background-color: #d1e7dd; }
 }
 .flashing {
     animation: flash-payment 1.5s infinite;
 }
-
-/* Animation สำหรับหน้าจอแพทย์ */
 @keyframes flash-doctor-alert {
-    0% { background-color: #fff3cd; } /* warning-light */
+    0% { background-color: #fff3cd; }
     50% { background-color: #ffffff; }
     100% { background-color: #fff3cd; }
 }
 .flashing-doctor-alert {
     animation: flash-doctor-alert 1.5s infinite;
-    border-left: 5px solid #ffc107; /* warning */
+    border-left: 5px solid #ffc107;
 }
-
-/* Animation สำหรับเคสที่แพทย์ส่งกลับ */
 @keyframes flash-returned {
-    0% { background-color: #cfe2ff; } /* primary-light */
+    0% { background-color: #cfe2ff; }
     50% { background-color: #ffffff; }
     100% { background-color: #cfe2ff; }
 }
 .flashing-returned-alert {
     animation: flash-returned 1.5s infinite;
-    border-left: 5px solid #0d6efd; /* primary */
+    border-left: 5px solid #0d6efd;
 }
 
