@@ -1,14 +1,10 @@
 <?php
 header('Content-Type: application/json');
 require_once __DIR__ . '/../configs/DB.php';
-// <<-- [ใหม่] เรียกใช้ไฟล์สำหรับส่ง Push -->>
-require_once __DIR__ . '/send_push_notification.php';
 
-if (session_status() == PHP_SESSION_NONE) { session_start(); }
+if ($_SERVER['REQUEST_METHOD'] !== 'POST') { http_response_code(405); echo json_encode(['status' => 'error', 'message' => 'POST method required']); exit; }
 if (!isset($_COOKIE['user_data'])) { http_response_code(401); echo json_encode(['error' => 'Unauthorized']); exit; }
 $user = json_decode($_COOKIE['user_data'], true);
-session_write_close(); 
-
 $pdo = getPDOConnection();
 $action = $_POST['action'] ?? '';
 $patient_id = $_POST['patient_id'] ?? 0;
@@ -24,17 +20,7 @@ function createLog($pdo, $patient_queue_id, $action_description, $user) {
 }
 
 try {
-    // ดึงข้อมูลคนไข้ก่อนทำ Action เพื่อใช้ในการส่ง Notification
-    $stmt_patient_info = $pdo->prepare("SELECT * FROM patient_queue WHERE id = ?");
-    $stmt_patient_info->execute([$patient_id]);
-    $patient_info = $stmt_patient_info->fetch();
-
-    if (!$patient_info) {
-        throw new Exception("Patient not found.");
-    }
-
     switch ($action) {
-        
         case 'process_patient': $sql = "UPDATE patient_queue SET status = 'waiting_therapy' WHERE id = ? AND status = 'waiting_counter'"; $pdo->prepare($sql)->execute([$patient_id]); createLog($pdo, $patient_id, "เคาน์เตอร์ส่งต่อคนไข้", $user); break;
         case 'assign_doctor': $doctor_name = $_POST['doctor_name'] ?? 'N/A'; $sql = "UPDATE patient_queue SET assigned_doctor_id = ?, assigned_doctor_name = ? WHERE id = ?"; $pdo->prepare($sql)->execute([$_POST['doctor_id'], $doctor_name, $patient_id]); createLog($pdo, $patient_id, "เคาน์เตอร์กำหนดแพทย์: " . $doctor_name, $user); break;
         case 'assign_room':
@@ -62,30 +48,8 @@ try {
                 $sql = "UPDATE patient_queue SET status = 'waiting_therapy' WHERE id = ?"; $pdo->prepare($sql)->execute([$patient_id]); createLog($pdo, $patient_id, "แพทย์ส่งกลับไปรอทำกายภาพ (คิวกลาง)", $user);
             }
             break;
-        case 'notify_doctor': 
-            $sql = "UPDATE patient_queue SET status = 'waiting_doctor' WHERE id = ? AND status = 'in_therapy'"; 
-            $pdo->prepare($sql)->execute([$patient_id]);
-            createLog($pdo, $patient_id, "นักกายภาพแจ้งแพทย์", $user);
-
-            // <<-- [ใหม่] ส่ง Push Notification ไปหาแพทย์ -->>
-            if (!empty($patient_info['assigned_doctor_id'])) {
-                sendPushNotification($pdo, $patient_info['assigned_doctor_id'], "มีเคสใหม่รอตรวจ", "คนไข้: " . $patient_info['patient_name']);
-            }
-            break;
-
-        case 'finish_consult': 
-            $sql = "UPDATE patient_queue SET status = 'payment_pending' WHERE id = ? AND status IN ('waiting_doctor', 'in_therapy', 'waiting_therapy')"; 
-            $pdo->prepare($sql)->execute([$patient_id]);
-            createLog($pdo, $patient_id, "แพทย์ตรวจเสร็จสิ้น", $user);
-
-             // <<-- [ใหม่] ส่ง Push Notification ไปหา Role 'counter' -->>
-             // หมายเหตุ: การส่งหา Role ทั้งหมดเป็น Feature ที่ซับซ้อนขึ้น
-             // ในที่นี้จะส่งหา User ID ที่เฉพาะเจาะจงก่อน (ต้องปรับแก้ในอนาคต)
-             // sendPushNotificationToRole($pdo, 'counter', "พร้อมชำระเงิน", "คนไข้: " . $patient_info['patient_name']);
-            break;
         case 'therapist_finish_work': $sql = "UPDATE patient_queue SET status = 'payment_pending' WHERE id = ? AND status = 'in_therapy'"; $pdo->prepare($sql)->execute([$patient_id]); createLog($pdo, $patient_id, "นักกายภาพจบงาน (ส่งชำระเงิน)", $user); break;
         default: throw new Exception("Invalid action provided");
-        
     }
     echo json_encode(['status' => 'success', 'message' => 'Action completed successfully']);
 } catch (Exception $e) {

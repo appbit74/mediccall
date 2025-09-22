@@ -10,20 +10,7 @@ $(document).ready(function() {
     const userRole = getUserRoleFromCookie();
     if (userRole) {
         startRealtimeUpdates(userRole);
-        initializePwa(); // <<-- เริ่มการทำงาน PWA
     }
-    
-    // ... (ส่วน PWA ทั้งหมด) ...
-    let swRegistration = null;
-    function initializePwa() { if ('serviceWorker' in navigator && 'PushManager' in window) { navigator.serviceWorker.register('service-worker.js').then((swReg) => { swRegistration = swReg; initializeUi(); }).catch((error) => console.error('Service Worker Error', error)); } else { $('#push-notification-btn').hide(); } }
-    function initializeUi() { $('#push-notification-btn').show(); swRegistration.pushManager.getSubscription().then((subscription) => { updateSubscriptionOnServer(subscription); updateBtn(!(subscription === null)); }); }
-    function updateBtn(isSubscribed) { if (Notification.permission === 'denied') { $('#push-notification-btn span').text('Notifications Blocked'); $('#push-notification-btn').prop('disabled', true); return; } if (isSubscribed) { $('#push-notification-btn span').text('Disable Notifications'); $('#push-notification-btn i').removeClass('bi-bell-slash').addClass('bi-bell-fill'); } else { $('#push-notification-btn span').text('Enable Notifications'); $('#push-notification-btn i').removeClass('bi-bell-fill').addClass('bi-bell-slash'); } }
-    function subscribeUser() { const appServerKey = urlB64ToUint8Array('YOUR_VAPID_PUBLIC_KEY'); swRegistration.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: appServerKey }).then((subscription) => { updateSubscriptionOnServer(subscription); updateBtn(true); }).catch((err) => updateBtn(false)); }
-    function unsubscribeUser() { swRegistration.pushManager.getSubscription().then((subscription) => { if (subscription) { return subscription.unsubscribe(); } }).catch((error) => console.log('Error unsubscribing', error)).then(() => { updateSubscriptionOnServer(null); updateBtn(false); }); }
-    function updateSubscriptionOnServer(subscription) { if (subscription) { fetch('api/save_subscription.php', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(subscription) }); } }
-    function urlB64ToUint8Array(base64String) { const padding = '='.repeat((4 - base64String.length % 4) % 4); const base64 = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/'); const rawData = window.atob(base64); const outputArray = new Uint8Array(rawData.length); for (let i = 0; i < rawData.length; ++i) { outputArray[i] = rawData.charCodeAt(i); } return outputArray; }
-    $('#push-notification-btn').on('click', function() { const btn = $(this); btn.prop('disabled', true); if (btn.find('span').text().includes('Enable')) { subscribeUser(); } else { unsubscribeUser(); } });
-
     
     function startRealtimeUpdates(role) {
         getInitialData(role);
@@ -33,10 +20,18 @@ $(document).ready(function() {
             if (data.error) { eventSource.close(); return; }
             updateView(role, data);
         };
-        eventSource.onerror = function(err) { console.error("EventSource failed:", err); eventSource.close(); };
+        eventSource.onerror = function(err) {
+            console.error("EventSource failed:", err);
+            eventSource.close();
+        };
     }
     
-    function getInitialData(role) { showLoader(); return $.getJSON(`api/data_handler.php?view=${role}`, (data) => updateView(role, data)).always(() => hideLoader()); }
+    function getInitialData(role) {
+        showLoader();
+        return $.getJSON(`api/data_handler.php?view=${role}`, (data) => updateView(role, data))
+            .always(() => hideLoader());
+    }
+    
     function updateView(role, data) {
         switch (role) {
             case 'counter':
@@ -107,7 +102,16 @@ $(document).ready(function() {
     }
 
     $('#manual-sync-btn').on('click', function() { showLoader(); const btn = $(this); btn.prop('disabled', true); $.getJSON('api/data_handler.php?action=manual_sync').always(() => { hideLoader(); btn.prop('disabled', false); }); });
-    $(document).on('click', '#doctor-reload-btn, #therapist-reload-btn', function() { showLoader(); const btn = $(this); const roleToReload = btn.attr('id').split('-')[0]; btn.prop('disabled', true); getInitialData(roleToReload).always(() => btn.prop('disabled', false)); });
+    $(document).on('click', '#doctor-reload-btn, #therapist-reload-btn', function() {
+        showLoader();
+        const btn = $(this);
+        const roleToReload = btn.attr('id').split('-')[0];
+        btn.prop('disabled', true);
+        getInitialData(roleToReload).always(() => {
+            btn.prop('disabled', false);
+        });
+    });
+    
     $(document).on('click', '.btn-process-patient', function() { handleAction('process_patient', { patient_id: $(this).data('id') }); });
     $(document).on('click', '.btn-notify-doctor', function() { handleAction('notify_doctor', { patient_id: $(this).data('id') }); });
     $(document).on('click', '.btn-finish-consult', function() { handleAction('finish_consult', { patient_id: $(this).data('id') }); });
