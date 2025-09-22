@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard - PS Rehab Queue</title>
-    <!-- <<-- [เพิ่ม] PWA Manifest & Theme Color -->>
+    <!-- <<-- [เพิ่ม] PWA Manifest & Theme Color -->
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#00854a">
 
