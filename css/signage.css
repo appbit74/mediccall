@@ -20,8 +20,6 @@ body {
 #clock { font-size: 1.4em; font-weight: bold; text-align: right; color: #00854a; }
 #signage-board { display: flex; flex-grow: 1; gap: 10px; padding: 10px; }
 .doctor-column { flex: 1; background-color: #fff; border-radius: 10px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); display: flex; flex-direction: column; overflow: hidden; }
-
-/* <<-- [แก้ไข] ลดขนาด Padding และ Font -->> */
 .doctor-header {
     padding: 12px;
     color: #343a40;
@@ -36,8 +34,6 @@ body {
     overflow-y: auto;
     flex-grow: 1;
 }
-
-/* <<-- [แก้ไข] ลดขนาด Padding, Margin และ Font ของการ์ด -->> */
 .patient-card {
     background-color: #e9ecef;
     border-radius: 8px;
@@ -54,7 +50,6 @@ body {
     color: #555;
     margin-top: 2px;
 }
-
 .no-patient { display: flex; align-items: center; justify-content: center; height: 100%; font-size: 1.5em; color: #aaa; }
 @keyframes flash-bg { 0% { background-color: #ffc107; } 50% { background-color: #fff3cd; } 100% { background-color: #ffc107; } }
 .flashing-alert { animation: flash-bg 1.5s infinite; border-left-color: #dc3545 !important; }

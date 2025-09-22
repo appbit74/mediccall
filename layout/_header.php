@@ -5,15 +5,16 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard - PS Rehab Queue</title>
+    <!-- <<-- [เพิ่ม] PWA Manifest & Theme Color -->>
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#00854a">
+
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     <link href="css/style.css" rel="stylesheet">
 </head>
 <body>
-<!-- <<-- [ใหม่] Loading Animation Overlay -->
-<div id="loading-overlay">
-    <div class="spinner"></div>
-</div>
+<div id="loading-overlay"><div class="spinner"></div></div>
 
 <audio id="notification-sound" src="assets/sounds/notification.mp3" preload="auto"></audio>
 <audio id="payment-sound" src="assets/sounds/payment.mp3" preload="auto"></audio>
@@ -25,6 +26,10 @@
             Queue System
         </a>
         <div class="d-flex align-items-center">
+             <!-- <<-- [เพิ่ม] ปุ่มสำหรับเปิด/ปิดการแจ้งเตือน -->>
+            <button id="push-notification-btn" class="btn btn-warning btn-sm me-3" style="display: none;">
+                <i class="bi bi-bell-slash"></i> <span>Enable Notifications</span>
+            </button>
             <a href="signage.php" target="_blank" class="btn btn-info btn-sm me-3">
                 <i class="bi bi-tv"></i> Open Signage
             </a>
