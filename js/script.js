@@ -1,4 +1,10 @@
 $(document).ready(function() {
+    // <<-- [แก้ไข] ย้ายการประกาศตัวแปรและฟังก์ชันที่เกี่ยวข้องกับ Loader มาไว้บนสุด -->>
+    const loader = $('#loading-overlay');
+    function showLoader() { loader.fadeIn(200); }
+    function hideLoader() { loader.fadeOut(200); }
+
+    // ตัวแปรสำหรับจดจำสถานะล่าสุดของแต่ละคิว เพื่อใช้ในการแจ้งเตือน
     let previousState = { counterPaymentIds: new Set(), therapistAllIds: new Set(), doctorWaitingIds: new Set() };
     let userHasInteracted = false;
     $(document).one('click', () => { userHasInteracted = true; });
@@ -8,11 +14,6 @@ $(document).ready(function() {
         startRealtimeUpdates(userRole);
     }
     
-    // <<-- [ใหม่] ฟังก์ชันสำหรับควบคุม Animation -->>
-    const loader = $('#loading-overlay');
-    function showLoader() { loader.fadeIn(200); }
-    function hideLoader() { loader.fadeOut(200); }
-
     function startRealtimeUpdates(role) {
         getInitialData(role);
         const eventSource = new EventSource(`api/stream.php`);
@@ -28,9 +29,9 @@ $(document).ready(function() {
     }
     
     function getInitialData(role) {
-        showLoader(); // <<-- แสดง Animation ก่อนโหลด
+        showLoader();
         return $.getJSON(`api/data_handler.php?view=${role}`, (data) => updateView(role, data))
-            .always(() => hideLoader()); // <<-- ซ่อน Animation เมื่อโหลดเสร็จ
+            .always(() => hideLoader());
     }
     
     function updateView(role, data) {
@@ -68,10 +69,28 @@ $(document).ready(function() {
     function getUserRoleFromCookie() { try { const c = document.cookie.split('; ').find(r => r.startsWith('user_data=')); return JSON.parse(decodeURIComponent(c.split('=')[1])).role; } catch (e) { return null; } }
     function playSound(soundId) { if (!userHasInteracted) return; const soundElement = document.getElementById(soundId); if (soundElement) { soundElement.play().catch(error => console.error("Error playing sound:", error)); } }
     function populateColumn(selector, data, cardCreator, emptyMsg) { const col = $(selector).empty(); if (!data || data.length === 0) { col.html(`<p class="text-muted text-center">${emptyMsg}</p>`); return; } $.each(data, (i, item) => col.append(cardCreator(item))); }
-    function handleAction(action, data, modalInstance = null) { data.action = action; $.post('api/action_handler.php', data, (res) => { if (res.status !== 'success') { alert('เกิดข้อผิดพลาด: ' + (res.message || 'ไม่ทราบสาเหตุ')); } if(modalInstance) modalInstance.hide(); }, 'json').fail(() => alert('การเชื่อมต่อเซิร์ฟเวอร์ล้มเหลว')); }
+    function handleAction(action, data, modalInstance = null) {
+        data.action = action;
+        $.post('api/action_handler.php', data, (res) => {
+            if (res.status !== 'success') {
+                alert('เกิดข้อผิดพลาด: ' + (res.message || 'ไม่ทราบสาเหตุ'));
+            }
+            if(modalInstance) modalInstance.hide();
+        }, 'json').fail(() => alert('การเชื่อมต่อเซิร์ฟเวอร์ล้มเหลว'));
+    }
 
     function createCounterNewCard(p) { return `<div class="card patient-card mb-2"><div class="card-body"><h5 class="card-title">${p.patient_name}</h5><p class="card-text">HN: ${p.patient_hn}</p><button class="btn btn-sm btn-primary btn-process-patient" data-id="${p.id}">ดำเนินการ</button></div></div>`; }
-    function createCounterInProcessCard(p) { let statusText = ''; switch(p.status) { case 'waiting_therapy': statusText = 'รอทำกายภาพ'; break; case 'in_therapy': statusText = 'กำลังทำกายภาพ'; break; case 'waiting_doctor': statusText = 'รอตรวจ'; break; default: statusText = p.status; } let docInfo = p.assigned_doctor_name ? `<span class="badge bg-info">${p.assigned_doctor_name}</span>` : `<button class="btn btn-sm btn-outline-info btn-assign-doctor" data-id="${p.id}" data-name="${p.patient_name}">กำหนดแพทย์</button>`; return `<div class="card patient-card mb-2"><div class="card-body d-flex flex-column justify-content-between"><div><h5 class="card-title">${p.patient_name}</h5><p class="card-text">HN: ${p.patient_hn}</p><p class="card-text">สถานะ: <span class="badge bg-secondary">${statusText}</span></p><p>แพทย์: ${docInfo}</p></div><button class="btn btn-sm btn-success mt-2 btn-complete-payment" data-id="${p.id}">เก็บเงินเรียบร้อย</button></div></div>`; }
+    function createCounterInProcessCard(p) { 
+        let statusText = '';
+        switch(p.status) {
+            case 'waiting_therapy': statusText = 'รอทำกายภาพ'; break;
+            case 'in_therapy': statusText = 'กำลังทำกายภาพ'; break;
+            case 'waiting_doctor': statusText = 'รอตรวจ'; break;
+            default: statusText = p.status;
+        }
+        let docInfo = p.assigned_doctor_name ? `<span class="badge bg-info">${p.assigned_doctor_name}</span>` : `<button class="btn btn-sm btn-outline-info btn-assign-doctor" data-id="${p.id}" data-name="${p.patient_name}">กำหนดแพทย์</button>`;
+        return `<div class="card patient-card mb-2"><div class="card-body d-flex flex-column justify-content-between"><div><h5 class="card-title">${p.patient_name}</h5><p class="card-text">HN: ${p.patient_hn}</p><p class="card-text">สถานะ: <span class="badge bg-secondary">${statusText}</span></p><p>แพทย์: ${docInfo}</p></div><button class="btn btn-sm btn-success mt-2 btn-complete-payment" data-id="${p.id}">เก็บเงินเรียบร้อย</button></div></div>`;
+    }
     function createCounterPaymentCard(p) { return `<div class="card patient-card mb-2 flashing"><div class="card-body"><h5 class="card-title">${p.patient_name}</h5><p class="card-text">HN: ${p.patient_hn}</p><button class="btn btn-sm btn-success btn-complete-payment" data-id="${p.id}">เก็บเงินเรียบร้อย</button></div></div>`; }
     function createTherapistWaitingCard(p, isNew = false) { const flashingClass = isNew ? 'flashing-returned-alert' : ''; return `<div class="card patient-card mb-2 ${flashingClass}"><div class="card-body"><h5 class="card-title">${p.patient_name}</h5><p class="card-text">HN: ${p.patient_hn}</p><p>แพทย์: ${p.assigned_doctor_name || 'ยังไม่ระบุ'}</p><button class="btn btn-sm btn-warning btn-take-case" data-id="${p.id}" data-name="${p.patient_name}" data-doctor-id="${p.assigned_doctor_id || ''}">รับงาน</button></div></div>`; }
     function createTherapistInTherapyCard(p, isNew = false) { const flashingClass = isNew ? 'flashing-returned-alert' : ''; let docInfo = p.assigned_doctor_name ? `<span class="badge bg-info">${p.assigned_doctor_name}</span>` : 'ยังไม่ระบุ'; return `<div class="card patient-card mb-2 ${flashingClass}"><div class="card-body d-flex flex-column justify-content-between"><div><h5 class="card-title">${p.patient_name}</h5><p class="card-text">HN: ${p.patient_hn}</p><p>ห้อง: <span class="badge bg-secondary">${p.assigned_room_name}</span></p><p>นักกายภาพ: <span class="badge bg-primary">${p.assigned_therapist_name}</span></p><p>แพทย์: ${docInfo}</p></div><div class="mt-2 d-grid gap-2 d-sm-block"><button class="btn btn-sm btn-info btn-notify-doctor" data-id="${p.id}">แจ้งแพทย์</button><button class="btn btn-sm btn-success btn-therapist-finish-work" data-id="${p.id}">จบงาน (ส่งชำระเงิน)</button></div></div></div>`; }
@@ -84,10 +103,9 @@ $(document).ready(function() {
         return `<div class="list-group-item ${flashingClass}"><div class="d-flex w-100 justify-content-between"><h5 class="mb-1">${p.patient_name} (HN: ${p.patient_hn})</h5><small>สถานะ: ${statusText}</small></div><p class="mb-1">ห้อง: ${p.assigned_room_name || 'N/A'} | นักกายภาพ: ${p.assigned_therapist_name || 'N/A'}</p><div class="mt-2">${finishButton}${sendBackButton}</div></div>`;
     }
 
-    // <<-- [แก้ไข] เพิ่มการแสดง Animation สำหรับปุ่ม Reload -->>
     $('#manual-sync-btn').on('click', function() { showLoader(); const btn = $(this); btn.prop('disabled', true); $.getJSON('api/data_handler.php?action=manual_sync').always(() => { hideLoader(); btn.prop('disabled', false); }); });
     $(document).on('click', '#doctor-reload-btn, #therapist-reload-btn', function() { showLoader(); const btn = $(this); const roleToReload = btn.attr('id').split('-')[0]; btn.prop('disabled', true); getInitialData(roleToReload).always(() => btn.prop('disabled', false)); });
-
+    
     $(document).on('click', '.btn-process-patient', function() { handleAction('process_patient', { patient_id: $(this).data('id') }); });
     $(document).on('click', '.btn-notify-doctor', function() { handleAction('notify_doctor', { patient_id: $(this).data('id') }); });
     $(document).on('click', '.btn-finish-consult', function() { handleAction('finish_consult', { patient_id: $(this).data('id') }); });

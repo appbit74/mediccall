@@ -1,5 +1,11 @@
 <div id="therapist-dashboard">
-    <h2 class="mb-3">Therapist Dashboard</h2>
+    <!-- <<-- [เพิ่ม] ปุ่ม Reload -->
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2 class="mb-0">Therapist Dashboard</h2>
+        <button id="therapist-reload-btn" class="btn btn-secondary btn-sm">
+            <i class="bi bi-arrow-clockwise"></i> Reload
+        </button>
+    </div>
     <div class="row">
         <div class="col-md-4"><div class="card"><div class="card-header bg-primary text-white"><i class="bi bi-person-plus-fill"></i> คนไข้ใหม่ (จาก JERA)</div><div class="card-body" id="new-patients-col"></div></div></div>
         <div class="col-md-4"><div class="card"><div class="card-header bg-warning"><i class="bi bi-person-walking"></i> รอทำกายภาพ (ส่งจากเคาน์เตอร์)</div><div class="card-body" id="waiting-therapy-col"></div></div></div>

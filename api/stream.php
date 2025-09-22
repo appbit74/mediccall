@@ -1,35 +1,17 @@
 <?php
-// ตั้งค่า header สำหรับ SSE ก่อนเสมอ
 header('Content-Type: text/event-stream');
 header('Cache-Control: no-cache');
 header('Connection: keep-alive');
 
 require_once __DIR__ . '/../configs/DB.php';
-require_once __DIR__ . '/helpers.php';
+require_once __DIR__ . '/helpers.php'; // เรียกใช้ helpers ที่มีฟังก์ชัน trigger
 
-// <<-- [แก้ไข] จัดการ Session อย่างถูกต้อง -->>
-// 1. เริ่ม Session เพื่ออ่านข้อมูล
-if (session_status() == PHP_SESSION_NONE) {
-    session_start();
-}
-
-// 2. ตรวจสอบ Cookie และดึงข้อมูลผู้ใช้
-if (!isset($_COOKIE['user_data'])) {
-    echo "data: " . json_encode(['error' => 'Unauthorized']) . "\n\n";
-    ob_flush(); flush();
-    exit;
-}
+if (session_status() == PHP_SESSION_NONE) { session_start(); }
+if (!isset($_COOKIE['user_data'])) { echo "data: " . json_encode(['error' => 'Unauthorized']) . "\n\n"; ob_flush(); flush(); exit; }
 $user = json_decode($_COOKIE['user_data'], true);
-
-// 3. (สำคัญที่สุด) ปิด Session ทันทีเพื่อปลดล็อคไฟล์
 session_write_close(); 
 
-// 4. หลังจากนี้ สคริปต์สามารถทำงานได้ยาวนานโดยไม่กระทบกับส่วนอื่น
-function sendSseMessage($data) {
-    echo "data: " . json_encode($data) . "\n\n";
-    if (ob_get_level() > 0) { ob_flush(); }
-    flush();
-}
+function sendSseMessage($data) { echo "data: " . json_encode($data) . "\n\n"; if (ob_get_level() > 0) { ob_flush(); } flush(); }
 
 set_time_limit(0);
 @ini_set('zlib.output_compression', 0);
@@ -37,16 +19,10 @@ if (function_exists('apache_setenv')) { @apache_setenv('no-gzip', 1); }
 
 $pdo = getPDOConnection();
 $last_hash = null;
-$sync_interval = 10; // Sync JERA ทุก 10 วินาที
-$last_sync_time = 0;
 
-// วนลูปทำงานหลัก
 while (true) {
-    $current_time = time();
-    if (($current_time - $last_sync_time) >= $sync_interval) {
-        triggerJeraSyncIfNeeded($pdo);
-        $last_sync_time = $current_time;
-    }
+    // <<-- [แก้ไข] เรียกใช้ฟังก์ชัน Trigger JERA Sync ในทุกๆ รอบ -->>
+    triggerJeraSyncIfNeeded($pdo);
     
     $response = [];
     $view = $user['role'] ?? '';
