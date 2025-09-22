@@ -56,18 +56,7 @@ $(document).ready(function() {
     function getUserRoleFromCookie() { try { const c = document.cookie.split('; ').find(r => r.startsWith('user_data=')); return JSON.parse(decodeURIComponent(c.split('=')[1])).role; } catch (e) { return null; } }
     function playSound(soundId) { if (!userHasInteracted) return; const soundElement = document.getElementById(soundId); if (soundElement) { soundElement.play().catch(error => console.error("Error playing sound:", error)); } }
     function populateColumn(selector, data, cardCreator, emptyMsg) { const col = $(selector).empty(); if (!data || data.length === 0) { col.html(`<p class="text-muted text-center">${emptyMsg}</p>`); return; } $.each(data, (i, item) => col.append(cardCreator(item))); }
-    
-    function handleAction(action, data, modalInstance = null) {
-        data.action = action;
-        $.post('api/action_handler.php', data, (res) => {
-            if (res.status === 'success') {
-                if(modalInstance) modalInstance.hide();
-                // ไม่ต้องทำอะไรแล้ว เพราะ SSE จะอัปเดตหน้าจอให้
-            } else {
-                alert('เกิดข้อผิดพลาด: ' + (res.message || 'ไม่ทราบสาเหตุ'));
-            }
-        }, 'json').fail(() => alert('การเชื่อมต่อเซิร์ฟเวอร์ล้มเหลว'));
-    }
+    function handleAction(action, data, modalInstance = null) { data.action = action; $.post('api/action_handler.php', data, (res) => { if (res.status !== 'success') { alert('เกิดข้อผิดพลาด: ' + (res.message || 'ไม่ทราบสาเหตุ')); } if(modalInstance) modalInstance.hide(); }, 'json').fail(() => alert('การเชื่อมต่อเซิร์ฟเวอร์ล้มเหลว')); }
 
     function createCounterNewCard(p) { return `<div class="card patient-card mb-2"><div class="card-body"><h5 class="card-title">${p.patient_name}</h5><p class="card-text">HN: ${p.patient_hn}</p><button class="btn btn-sm btn-primary btn-process-patient" data-id="${p.id}">ดำเนินการ</button></div></div>`; }
     function createCounterInProcessCard(p) { 
