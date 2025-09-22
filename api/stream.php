@@ -4,24 +4,36 @@ header('Cache-Control: no-cache');
 header('Connection: keep-alive');
 
 require_once __DIR__ . '/../configs/DB.php';
-require_once __DIR__ . '/helpers.php'; // เรียกใช้ helpers ที่มีฟังก์ชัน trigger
+require_once __DIR__ . '/helpers.php';
 
 if (session_status() == PHP_SESSION_NONE) { session_start(); }
-if (!isset($_COOKIE['user_data'])) { echo "data: " . json_encode(['error' => 'Unauthorized']) . "\n\n"; ob_flush(); flush(); exit; }
+if (!isset($_COOKIE['user_data'])) {
+    echo "data: " . json_encode(['error' => 'Unauthorized']) . "\n\n";
+    ob_flush();
+    flush();
+    exit;
+}
 $user = json_decode($_COOKIE['user_data'], true);
-session_write_close(); 
+session_write_close();
 
-function sendSseMessage($data) { echo "data: " . json_encode($data) . "\n\n"; if (ob_get_level() > 0) { ob_flush(); } flush(); }
+function sendSseMessage($data) {
+    echo "data: " . json_encode($data) . "\n\n";
+    if (ob_get_level() > 0) {
+        ob_flush();
+    }
+    flush();
+}
 
 set_time_limit(0);
 @ini_set('zlib.output_compression', 0);
-if (function_exists('apache_setenv')) { @apache_setenv('no-gzip', 1); }
+if (function_exists('apache_setenv')) {
+    @apache_setenv('no-gzip', 1);
+}
 
 $pdo = getPDOConnection();
 $last_hash = null;
 
 while (true) {
-    // <<-- [แก้ไข] เรียกใช้ฟังก์ชัน Trigger JERA Sync ในทุกๆ รอบ -->>
     triggerJeraSyncIfNeeded($pdo);
     
     $response = [];
@@ -44,16 +56,22 @@ while (true) {
             $stmt->execute(['doctor_id' => $doctor_id]);
             $response['my_patients'] = $stmt->fetchAll();
             break;
-        default: $response['error'] = 'Invalid role'; break;
+        default:
+            $response['error'] = 'Invalid role';
+            break;
     }
 
     $current_hash = md5(json_encode($response));
     if ($current_hash !== $last_hash) {
         sendSseMessage($response);
         $last_hash = $current_hash;
+    } else {
+        // <<-- [แก้ไข] เพิ่มการส่ง comment เพื่อเป็น heartbeat -->>
+        echo ": heartbeat\n\n";
+        if (ob_get_level() > 0) { ob_flush(); }
+        flush();
     }
     
     sleep(2);
 }
 ?>
-

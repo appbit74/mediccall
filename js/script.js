@@ -23,6 +23,8 @@ $(document).ready(function() {
         eventSource.onerror = function(err) {
             console.error("EventSource failed:", err);
             eventSource.close();
+            // ลองเชื่อมต่อใหม่หลังจาก 5 วินาที
+            setTimeout(() => startRealtimeUpdates(role), 5000);
         };
     }
     
@@ -67,14 +69,25 @@ $(document).ready(function() {
     function getUserRoleFromCookie() { try { const c = document.cookie.split('; ').find(r => r.startsWith('user_data=')); return JSON.parse(decodeURIComponent(c.split('=')[1])).role; } catch (e) { return null; } }
     function playSound(soundId) { if (!userHasInteracted) return; const soundElement = document.getElementById(soundId); if (soundElement) { soundElement.play().catch(error => console.error("Error playing sound:", error)); } }
     function populateColumn(selector, data, cardCreator, emptyMsg) { const col = $(selector).empty(); if (!data || data.length === 0) { col.html(`<p class="text-muted text-center">${emptyMsg}</p>`); return; } $.each(data, (i, item) => col.append(cardCreator(item))); }
+    
+    // <<-- [แก้ไข] ปรับปรุงฟังก์ชัน handleAction ให้เรียกข้อมูลใหม่ทันที -->>
     function handleAction(action, data, modalInstance = null) {
+        showLoader();
         data.action = action;
         $.post('api/action_handler.php', data, (res) => {
-            if (res.status !== 'success') {
+            if (res.status === 'success') {
+                // เมื่อสำเร็จ ให้ดึงข้อมูลใหม่ทันทีเพื่ออัปเดตหน้าจอของผู้ใช้คนนี้
+                // ส่วนผู้ใช้อื่นๆ จะยังคงได้รับอัปเดตจาก SSE stream
+                getInitialData(userRole); 
+            } else {
                 alert('เกิดข้อผิดพลาด: ' + (res.message || 'ไม่ทราบสาเหตุ'));
+                hideLoader();
             }
             if(modalInstance) modalInstance.hide();
-        }, 'json').fail(() => alert('การเชื่อมต่อเซิร์ฟเวอร์ล้มเหลว'));
+        }, 'json').fail(() => {
+            alert('การเชื่อมต่อเซิร์ฟเวอร์ล้มเหลว');
+            hideLoader();
+        });
     }
 
     function createCounterNewCard(p) { return `<div class="card patient-card mb-2"><div class="card-body"><h5 class="card-title">${p.patient_name}</h5><p class="card-text">HN: ${p.patient_hn}</p><button class="btn btn-sm btn-primary btn-process-patient" data-id="${p.id}">ดำเนินการ</button></div></div>`; }
@@ -123,4 +136,3 @@ $(document).ready(function() {
     $(document).on('click', '.btn-take-case', function() { const preAssignedDoctorId = $(this).data('doctor-id'); $('#accept-case-patient-id').val($(this).data('id')); $('#accept-case-patient-name').text($(this).data('name')); $.getJSON('api/data_handler.php?get=rooms', (rooms) => { const sel = $('#room-select').empty(); if(rooms.length > 0) { $.each(rooms, (i, r) => sel.append(`<option value="${r.uuid}">${r.name}</option>`)); } else { sel.append('<option value="">ไม่มีห้องว่าง</option>'); }}); $.getJSON('api/data_handler.php?get=doctors', (doctors) => { const sel = $('#doctor-select-therapist').empty().append('<option value="">-- ไม่กำหนดแพทย์ --</option>'); $.each(doctors, (i, d) => sel.append(`<option value="${d.id}">${d.name}</option>`)); if (preAssignedDoctorId) { sel.val(preAssignedDoctorId); }}); new bootstrap.Modal('#acceptCaseModal').show(); });
     $('#confirm-accept-case').on('click', function() { const roomId = $('#room-select').val(); if (!roomId) { alert('กรุณาเลือกห้อง'); return; } const doctorId = $('#doctor-select-therapist').val(); const data = { patient_id: $('#accept-case-patient-id').val(), room_id: roomId, room_name: $('#room-select option:selected').text(), doctor_id: doctorId, doctor_name: doctorId ? $('#doctor-select-therapist option:selected').text() : '' }; handleAction('assign_room', data, bootstrap.Modal.getInstance($('#acceptCaseModal'))); });
 });
-
