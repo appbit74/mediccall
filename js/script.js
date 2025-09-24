@@ -12,10 +12,32 @@ $(document).ready(function () {
         therapistAllIds: new Set(),
         doctorWaitingIds: new Set(),
     };
+
+    // <<-- [แก้ไขสำหรับ iOS] ปรับปรุงการจัดการเสียง -->>
     let userHasInteracted = false;
-    $(document).one("click", () => {
+    $(document).one("click touchstart", () => {
+        if (userHasInteracted) return;
         userHasInteracted = true;
+
+        // บน iOS, เสียงต้องถูก 'ปลดล็อค' ด้วยการกระทำของผู้ใช้โดยตรง
+        // เราจะสั่ง .play() แล้ว .pause() เสียงทั้งหมดทันทีในการแตะครั้งแรก
+        // เพื่อให้เบราว์เซอร์อนุญาตให้เล่นเสียงจากโค้ดในภายหลังได้
+        const soundIds = ["payment-sound", "notification-sound"];
+        soundIds.forEach(id => {
+            const sound = document.getElementById(id);
+            if (sound) {
+                sound.play().then(() => {
+                    sound.pause();
+                    sound.currentTime = 0; // รีเซ็ตเสียงให้เริ่มจากต้น
+                }).catch(error => {
+                    // การ pause ทันทีอาจทำให้เกิด error ที่ไม่เป็นอันตรายบนบางเบราว์เซอร์
+                    // สามารถละเว้นได้
+                    console.log(`Could not prime sound '${id}'. Error: ${error.message}`);
+                });
+            }
+        });
     });
+    // <<-- สิ้นสุดส่วนที่แก้ไข -->>
 
     const userRole = getUserRoleFromCookie();
     if (userRole) {
@@ -23,20 +45,17 @@ $(document).ready(function () {
     }
 
     function startRealtimeUpdates(role) {
-        getInitialData(role);
-        const eventSource = new EventSource(`api/stream.php`);
-        eventSource.onmessage = function (event) {
-            const data = JSON.parse(event.data);
-            if (data.error) {
-                eventSource.close();
-                return;
-            }
-            updateView(role, data);
-        };
-        eventSource.onerror = (err) => {
-            console.error("EventSource failed:", err);
-            eventSource.close();
-        };
+        setTimeout(() => {
+            getInitialData(role);
+            setInterval(syncData, 3000);
+        }, 500);
+    }
+    
+    function syncData() {
+        if (!userRole) return;
+        $.getJSON(`api/data_handler.php?view=${userRole}`, (data) =>
+            updateView(userRole, data)
+        ).fail(() => console.error("Polling failed."));
     }
 
     function getInitialData(role) {
@@ -148,6 +167,8 @@ $(document).ready(function () {
             return null;
         }
     }
+
+    // ฟังก์ชันนี้ไม่จำเป็นต้องแก้ไข
     function playSound(soundId) {
         if (!userHasInteracted) return;
         const soundElement = document.getElementById(soundId);
@@ -157,6 +178,7 @@ $(document).ready(function () {
                 .catch((error) => console.error("Error playing sound:", error));
         }
     }
+
     function populateColumn(selector, data, cardCreator, emptyMsg) {
         const col = $(selector).empty();
         if (!data || data.length === 0) {

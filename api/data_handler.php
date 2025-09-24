@@ -8,8 +8,8 @@ if (!isset($_COOKIE['user_data'])) { http_response_code(401); echo json_encode([
 $user = json_decode($_COOKIE['user_data'], true);
 $pdo = getPDOConnection();
 
-// <<-- [หมายเหตุ] การ Sync จะถูกเรียกใช้โดย stream.php แทน -->>
-// syncWithJeraAPI($pdo); 
+// <<-- [แก้ไข] ย้ายการเรียก Sync มาไว้ที่นี่ เพื่อให้ถูกเรียกทุกครั้งที่ Polling -->>
+triggerJeraSyncIfNeeded($pdo);
 
 if (isset($_GET['get'])) {
     if ($_GET['get'] === 'doctors') {
@@ -29,7 +29,6 @@ if (isset($_GET['get'])) {
 
 $view = $_GET['view'] ?? ''; $response = [];
 switch($view) {
-    // <<-- [แก้ไข] ปรับการดึงข้อมูลสำหรับหน้า Counter -->>
     case 'counter':
         $response['new_patients'] = $pdo->query("SELECT * FROM patient_queue WHERE status = 'waiting_counter' ORDER BY created_at DESC")->fetchAll();
         $response['in_process_patients'] = $pdo->query("SELECT * FROM patient_queue WHERE status IN ('waiting_therapy', 'in_therapy', 'waiting_doctor') ORDER BY last_updated_at DESC")->fetchAll();
@@ -51,4 +50,3 @@ switch($view) {
 }
 echo json_encode($response);
 ?>
-

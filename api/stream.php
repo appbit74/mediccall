@@ -24,43 +24,54 @@ function sendSseMessage($data) {
     flush();
 }
 
-set_time_limit(0);
-@ini_set('zlib.output_compression', 0);
+// ปิดการบีบอัดข้อมูล เพราะอาจรบกวนการทำงานของ SSE
 if (function_exists('apache_setenv')) {
     @apache_setenv('no-gzip', 1);
 }
+@ini_set('zlib.output_compression', 0);
+
+// สั่งให้ส่งข้อมูลออกไปทันทีที่ echo
+@ini_set('implicit_flush', 1);
+@ob_end_flush();
+set_time_limit(0); // ป้องกันสคริปต์หมดเวลา
 
 $pdo = getPDOConnection();
 $last_hash = null;
 
 while (true) {
-    triggerJeraSyncIfNeeded($pdo);
-    
-    $response = [];
-    $view = $user['role'] ?? '';
-    switch($view) {
-        case 'counter':
-            $response['new_patients'] = $pdo->query("SELECT * FROM patient_queue WHERE status = 'waiting_counter' ORDER BY created_at DESC")->fetchAll();
-            $response['in_process_patients'] = $pdo->query("SELECT * FROM patient_queue WHERE status IN ('waiting_therapy', 'in_therapy', 'waiting_doctor') ORDER BY last_updated_at DESC")->fetchAll();
-            $response['payment_pending'] = $pdo->query("SELECT * FROM patient_queue WHERE status = 'payment_pending' ORDER BY last_updated_at DESC")->fetchAll();
-            break;
-        case 'therapist':
-            $response['new_patients'] = $pdo->query("SELECT * FROM patient_queue WHERE status = 'waiting_counter' ORDER BY created_at DESC")->fetchAll();
-            $response['waiting_therapy'] = $pdo->query("SELECT * FROM patient_queue WHERE status = 'waiting_therapy' ORDER BY last_updated_at DESC")->fetchAll();
-            $response['in_therapy'] = $pdo->query("SELECT * FROM patient_queue WHERE status = 'in_therapy' ORDER BY last_updated_at DESC")->fetchAll();
-            break;
-        case 'doctor':
-            $doctor_id = $user['id'] ?? '0';
-            $sql = "SELECT * FROM patient_queue WHERE status IN ('waiting_therapy', 'in_therapy', 'waiting_doctor') AND assigned_doctor_id = :doctor_id ORDER BY last_updated_at DESC";
-            $stmt = $pdo->prepare($sql);
-            $stmt->execute(['doctor_id' => $doctor_id]);
-            $response['my_patients'] = $stmt->fetchAll();
-            break;
-        default:
-            $response['error'] = 'Invalid role';
-            break;
+    try{
+        triggerJeraSyncIfNeeded($pdo);
+        
+        $response = [];
+        $view = $user['role'] ?? '';
+        switch($view) {
+            case 'counter':
+                $response['new_patients'] = $pdo->query("SELECT * FROM patient_queue WHERE status = 'waiting_counter' ORDER BY created_at DESC")->fetchAll();
+                $response['in_process_patients'] = $pdo->query("SELECT * FROM patient_queue WHERE status IN ('waiting_therapy', 'in_therapy', 'waiting_doctor') ORDER BY last_updated_at DESC")->fetchAll();
+                $response['payment_pending'] = $pdo->query("SELECT * FROM patient_queue WHERE status = 'payment_pending' ORDER BY last_updated_at DESC")->fetchAll();
+                break;
+            case 'therapist':
+                $response['new_patients'] = $pdo->query("SELECT * FROM patient_queue WHERE status = 'waiting_counter' ORDER BY created_at DESC")->fetchAll();
+                $response['waiting_therapy'] = $pdo->query("SELECT * FROM patient_queue WHERE status = 'waiting_therapy' ORDER BY last_updated_at DESC")->fetchAll();
+                $response['in_therapy'] = $pdo->query("SELECT * FROM patient_queue WHERE status = 'in_therapy' ORDER BY last_updated_at DESC")->fetchAll();
+                break;
+            case 'doctor':
+                $doctor_id = $user['id'] ?? '0';
+                $sql = "SELECT * FROM patient_queue WHERE status IN ('waiting_therapy', 'in_therapy', 'waiting_doctor') AND assigned_doctor_id = :doctor_id ORDER BY last_updated_at DESC";
+                $stmt = $pdo->prepare($sql);
+                $stmt->execute(['doctor_id' => $doctor_id]);
+                $response['my_patients'] = $stmt->fetchAll();
+                break;
+            default:
+                $response['error'] = 'Invalid role';
+                break;
+        }
+    } catch (PDOException $e) {
+        // Log error หรือพยายามเชื่อมต่อ DB ใหม่
+        // หรือส่งข้อความ error กลับไปแล้ว exit
+        sendSseMessage(['error' => 'Database connection failed. Please refresh.']);
+        exit;
     }
-
     $current_hash = md5(json_encode($response));
     if ($current_hash !== $last_hash) {
         sendSseMessage($response);

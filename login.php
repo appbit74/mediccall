@@ -18,8 +18,13 @@ if (isset($_SESSION['err_message'])) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login - PS Rehab Center Queue System</title>
+    <title>Login - PS Medical Infomation System</title>
+    <!-- <<-- [เพิ่ม] PWA Manifest & Theme Color -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#00854a">
+    
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="shortcut icon" href="assets/icons/icon-192.png" type="image/x-icon">
     <style>
         body {
             background-color: #f4f7f6;
@@ -65,7 +70,7 @@ if (isset($_SESSION['err_message'])) {
             <div class="card login-card">
                 <div class="login-header">
                     <img src="https://salary.psrehabccenter.com/datas/images/logo.png" alt="PS Rehab Center Logo" class="logo">
-                    <h4>ระบบจัดการคิวผู้ป่วย</h4>
+                    <h4>PS Medical Infomation System</h4>
                 </div>
                 <div class="card-body p-4 p-md-5">
                     <?php if ($error_message): ?>
