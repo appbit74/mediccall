@@ -13,6 +13,10 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     <link href="css/style.css" rel="stylesheet">
     <link rel="shortcut icon" href="assets/icons/icon-192.png" type="image/x-icon">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="JERA Queue">
+    <link rel="apple-touch-icon" href="assets/icons/icon-192.png">
 </head>
 <body>
 <!-- <<-- [ใหม่] Loading Animation Overlay -->

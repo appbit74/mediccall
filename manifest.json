@@ -1,5 +1,5 @@
 {
-    "name": "PS Rehab Queue System",
+    "name": "PS Medical Infomation System",
     "short_name": "PS Queue",
     "description": "Real-time patient queue management system for PS Rehab Center.",
     "start_url": "index.php",

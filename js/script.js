@@ -375,4 +375,63 @@ $(document).ready(function () {
             bootstrap.Modal.getInstance($("#acceptCaseModal"))
         );
     });
+
+    // เพิ่มฟังก์ชันสำหรับจัดการ Push Notifications
+    function initializePushNotifications() {
+        if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
+            console.warn('Push Notifications are not supported by this browser.');
+            return;
+        }
+
+        // 1. ลงทะเบียน Service Worker
+        navigator.serviceWorker.register('service-worker.js')
+            .then(swReg => {
+                // console.log('Service Worker is registered', swReg);
+                // 2. ขออนุญาตผู้ใช้
+                return requestNotificationPermission(swReg);
+            })
+            .then(subscription => {
+                if (subscription) {
+                    // 3. ส่ง Subscription ไปยัง Backend
+                    sendSubscriptionToServer(subscription);
+                }
+            })
+            .catch(error => {
+                console.error('Service Worker Error', error);
+            });
+    }
+
+    function requestNotificationPermission(swReg) {
+        return Notification.requestPermission().then(permission => {
+            if (permission === 'granted') {
+                console.log('Notification permission granted.');
+                // 4. รับ Subscription
+                return swReg.pushManager.subscribe({
+                    userVisibleOnly: true,
+                    applicationServerKey: 'BG7ecUqttn9OY62ggJTC6i-Gazp49hxDYuVEqKef3dJ57YsZkY-mo2oBr5wjGTOWOIWfnHWKdcpvS6GJfcc9mS8' // <<-- ใส่ Public Key ของคุณที่นี่
+                });
+            } else {
+                console.warn('Notification permission denied.');
+                return null;
+            }
+        });
+    }
+
+    function sendSubscriptionToServer(subscription) {
+        fetch('api/save_subscription.php', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(subscription)
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'success') {
+                console.log('Subscription saved successfully.');
+            }
+        })
+        .catch(error => console.error('Error sending subscription to server:', error));
+    }
+
+    // เรียกใช้ฟังก์ชันนี้เมื่อหน้าเว็บพร้อม
+    initializePushNotifications();
 });

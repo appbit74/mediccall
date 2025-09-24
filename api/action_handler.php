@@ -1,6 +1,10 @@
 <?php
 header('Content-Type: application/json');
+require_once __DIR__ . '/../vendor/autoload.php';
 require_once __DIR__ . '/../configs/DB.php';
+
+use Minishlink\WebPush\WebPush;
+use Minishlink\WebPush\Subscription;
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') { http_response_code(405); echo json_encode(['status' => 'error', 'message' => 'POST method required']); exit; }
 if (!isset($_COOKIE['user_data'])) { http_response_code(401); echo json_encode(['error' => 'Unauthorized']); exit; }
@@ -19,6 +23,45 @@ function createLog($pdo, $patient_queue_id, $action_description, $user) {
     $stmt->execute([$patient_queue_id, $patient_name, $action_description, $user['id'] ?? 'system', $user['name'] ?? 'System']);
 }
 
+function pushNotifications ($pdo){
+    // 1. ดึง Subscriptions ทั้งหมดจากฐานข้อมูล
+    $stmt = $pdo->query("SELECT * FROM push_subscriptions");
+    $subscriptions = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    
+    // 2. ตั้งค่า VAPID keys ของคุณ
+    $auth = [
+        'VAPID' => [
+            'subject' => 'mailto:appbit74@gmail.com',
+            'publicKey' => 'BG7ecUqttn9OY62ggJTC6i-Gazp49hxDYuVEqKef3dJ57YsZkY-mo2oBr5wjGTOWOIWfnHWKdcpvS6GJfcc9mS8', // <<-- ใส่ Public Key
+            'privateKey' => 'oGgaxVrGWf4DxO69vQU1QMxQhTDiuXsIGdpk6dBFfOc', // <<-- ใส่ Private Key
+        ],
+    ];
+    $webPush = new WebPush($auth);
+    // 3. เตรียมข้อมูลที่จะส่ง
+    $notificationPayload = json_encode([
+        'title' => 'รายการแจ้งเตือน!',
+        'body' => 'มีคนไข้รออยู่ที่ห้องตรวจ',
+        'icon' => __DIR__.'/../assets/icon/badge.png'
+    ]);
+    
+    // 4. วนลูปส่ง Notification ไปยังทุก Subscription
+    foreach ($subscriptions as $sub) {
+        $subscription = Subscription::create([
+            'endpoint' => $sub['endpoint'],
+            'publicKey' => $sub['p256dh'],
+            'authToken' => $sub['auth'],
+        ]);
+        $webPush->queueNotification($subscription, $notificationPayload);
+    }
+    // 5. ส่ง Notification ทั้งหมดที่อยู่ในคิว
+    foreach ($webPush->flush() as $report) {
+        $endpoint = $report->getRequest()->getUri()->__toString();
+        if (!$report->isSuccess()) {
+            // หากส่งไม่สำเร็จ (เช่น ผู้ใช้ถอนการติดตั้ง) ควรลบ subscription นี้ออกจาก DB
+            echo "Error sending to {$endpoint}: {$report->getReason()}";
+        }
+    }
+}
 try {
     switch ($action) {
         case 'process_patient': $sql = "UPDATE patient_queue SET status = 'waiting_therapy' WHERE id = ? AND status = 'waiting_counter'"; $pdo->prepare($sql)->execute([$patient_id]); createLog($pdo, $patient_id, "เคาน์เตอร์ส่งต่อคนไข้", $user); break;
