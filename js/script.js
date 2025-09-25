@@ -171,6 +171,15 @@ $(document).ready(function () {
     // ฟังก์ชันนี้ไม่จำเป็นต้องแก้ไข
     function playSound(soundId) {
         if (!userHasInteracted) return;
+
+        // --- ส่วนที่เพิ่มเข้ามา ---
+        // ตรวจสอบว่าเบราว์เซอร์รองรับการสั่นหรือไม่
+        if ('vibrate' in navigator) {
+            // สั่งให้สั่นตามรูปแบบ [สั่น, หยุด, สั่น]
+            navigator.vibrate([200, 100, 200]);
+        }
+        // --- สิ้นสุดส่วนที่เพิ่ม ---
+        
         const soundElement = document.getElementById(soundId);
         if (soundElement) {
             soundElement

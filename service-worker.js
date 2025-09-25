@@ -5,9 +5,9 @@ self.addEventListener('push', function(event) {
     const title = data.title || 'PS Medical Infomation System';
     const options = {
         body: data.body,
-        icon: 'asstes/icons/icon-192.png', // ไอคอนที่จะแสดง
-        badge: 'asstes/icons/badge.png',
-        sound: 'asstes/sounds/notification.mp3', // เสียง (อาจไม่ทำงานบนทุกอุปกรณ์)
+        icon: 'assets/icons/icon-192.png', // ไอคอนที่จะแสดง
+        badge: 'assets/icons/badge.png',
+        sound: 'assets/sounds/notification.mp3', // เสียง (อาจไม่ทำงานบนทุกอุปกรณ์)
         vibrate: [200, 100, 200] // การสั่น
     };
 

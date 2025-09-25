@@ -98,5 +98,7 @@ function _jera_getQueueList($token, $branchUUID) {
     foreach ($data as $patient) { if (isset($patient['opd']['create_date']) && substr($patient['opd']['create_date'], 0, 10) === $today) { $todays_queue[] = $patient; } }
     return $todays_queue;
 }
+
+
 ?>
 

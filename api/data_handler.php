@@ -1,10 +1,15 @@
 <?php
+// เพิ่มบรรทัดนี้เพื่อทดสอบ
 header('Content-Type: application/json');
 require_once __DIR__ . '/../configs/DB.php';
 require_once __DIR__ . '/helpers.php';
 
 if (isset($_GET['action']) && $_GET['action'] === 'manual_sync') { triggerJeraSyncIfNeeded(getPDOConnection(), true); echo json_encode(['status' => 'success', 'message' => 'Manual sync completed.']); exit; }
 if (!isset($_COOKIE['user_data'])) { http_response_code(401); echo json_encode(['error' => 'Unauthorized']); exit; }
+
+$counterLast_hash = null;
+$therapistLast_hash = null;
+$doctorLast_hash = null;
 $user = json_decode($_COOKIE['user_data'], true);
 $pdo = getPDOConnection();
 
@@ -28,6 +33,7 @@ if (isset($_GET['get'])) {
 }
 
 $view = $_GET['view'] ?? ''; $response = [];
+$last_hash = $_SESSION['last_hash'] ?? null;
 switch($view) {
     case 'counter':
         $response['new_patients'] = $pdo->query("SELECT * FROM patient_queue WHERE status = 'waiting_counter' ORDER BY created_at DESC")->fetchAll();
@@ -48,5 +54,6 @@ switch($view) {
         break;
     default: http_response_code(400); $response['error'] = 'Invalid view'; break;
 }
+
 echo json_encode($response);
 ?>
