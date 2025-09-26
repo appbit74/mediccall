@@ -18,7 +18,7 @@ if (isset($_SESSION['err_message'])) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login - PS Medical Infomation System</title>
+    <title>Login - PS Medical Information System</title>
     <!-- <<-- [เพิ่ม] PWA Manifest & Theme Color -->
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#00854a">

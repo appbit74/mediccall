@@ -13,7 +13,7 @@
 <body>
     <header class="signage-header">
         <img src="https://salary.psrehabccenter.com/datas/images/logo.png" alt="Logo">
-        <h1 class="header-title">PS Medical Infomation System</h1> 
+        <h1 class="header-title">PS Medical Information System</h1> 
         <div id="clock"></div>
     </header>
 

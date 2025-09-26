@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard - PS Medical Infomation System</title>
+    <title>Dashboard - PS Medical Information System</title>
     <!-- <<-- [เพิ่ม] PWA Manifest & Theme Color -->
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#00854a">
@@ -32,7 +32,7 @@
     <div class="container-fluid">
         <a class="navbar-brand" href="index.php">
             <img src="https://salary.psrehabccenter.com/datas/images/logo.png" alt="Logo" height="40" class="d-none d-sm-inline"> 
-            PS Medical Infomation System
+            PS Medical Information System
         </a>
         <div class="d-flex align-items-center">
             <a href="signage.php" target="_blank" class="btn btn-info btn-sm me-3">
