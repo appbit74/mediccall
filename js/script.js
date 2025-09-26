@@ -329,6 +329,8 @@ $(document).ready(function () {
             "assign_doctor",
             {
                 patient_id: $("#doctor-modal-patient-id").val(),
+                room_id: $("#room-select").val(),
+                room_name: $("#room-select option:selected").text(),
                 doctor_id: $("#doctor-select").val(),
                 doctor_name: $("#doctor-select option:selected").text(),
             },

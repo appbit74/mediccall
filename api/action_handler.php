@@ -61,12 +61,13 @@ try {
             break;
 
         case 'assign_doctor':
+            $room_name = $_POST['room_name'] ?? 'N/A';
             $doctor_name = $_POST['doctor_name'] ?? 'N/A';
-            $sql = "UPDATE patient_queue SET assigned_doctor_id = ?, assigned_doctor_name = ? WHERE id = ?";
-            $pdo->prepare($sql)->execute([$_POST['doctor_id'], $doctor_name, $patient_id]);
+            $sql = "UPDATE patient_queue SET assigned_doctor_id = ?, assigned_doctor_name = ?, assigned_room_id = ?, assigned_room_name = ? WHERE id = ?";
+            $pdo->prepare($sql)->execute([$_POST['doctor_id'], $doctor_name, $_POST['room_id'], $room_name, $patient_id]);
             createLog($pdo, $patient_id, $patient_name, "เคาน์เตอร์กำหนดแพทย์: " . $doctor_name, $user);
             $title = 'กำหนดแพทย์ให้คนไข้';
-            $body = "แพทย์ $doctor_name ได้รับมอบหมายให้ดูแลคุณ $patient_name";
+            $body = "แพทย์ $doctor_name ได้รับมอบหมายให้ดูแลคุณ $patient_name ".(!empty($_POST['room_id']) ? "ที่ห้องตรวจ ".$room_name:"");
             $action_by = 'conuter';
             break;
 

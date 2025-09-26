@@ -34,10 +34,17 @@
 </div>
 <!-- Modal for Assigning Doctor (ไม่มีการเปลี่ยนแปลง) -->
 <div class="modal fade" id="assignDoctorModal" tabindex="-1">
-    <div class="modal-dialog"><div class="modal-content">
-        <div class="modal-header"><h5 class="modal-title">กำหนดแพทย์</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
-        <div class="modal-body"><p>คนไข้: <strong id="doctor-modal-patient-name"></strong></p><input type="hidden" id="doctor-modal-patient-id"><div class="mb-3"><label for="doctor-select" class="form-label">เลือกแพทย์</label><select class="form-select" id="doctor-select"></select></div></div>
-        <div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">ปิด</button><button type="button" class="btn btn-primary" id="confirm-assign-doctor">ยืนยัน</button></div>
-    </div></div>
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">กำหนดแพทย์</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>คนไข้: <strong id="doctor-modal-patient-name"></strong></p><input type="hidden" id="doctor-modal-patient-id">
+                <div class="mb-3"><label for="room-select" class="form-label">เลือกห้อง</label><select class="form-select" id="room-select"></select></div>
+                <div class="mb-3"><label for="doctor-select" class="form-label">เลือกแพทย์</label><select class="form-select" id="doctor-select"></select></div>
+            </div>
+            <div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">ปิด</button><button type="button" class="btn btn-primary" id="confirm-assign-doctor">ยืนยัน</button></div>
+        </div>
+    </div>
 </div>
-
