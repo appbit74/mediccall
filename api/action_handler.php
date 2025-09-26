@@ -67,7 +67,7 @@ try {
             $pdo->prepare($sql)->execute([$_POST['doctor_id'], $doctor_name, $_POST['room_id'], $room_name, $patient_id]);
             createLog($pdo, $patient_id, $patient_name, "เคาน์เตอร์กำหนดแพทย์: " . $doctor_name, $user);
             $title = 'กำหนดแพทย์ให้คนไข้';
-            $body = "แพทย์ $doctor_name ได้รับมอบหมายให้ดูแลคุณ $patient_name ".(!empty($_POST['room_id']) ? "ที่ห้องตรวจ ".$room_name:"");
+            $body = "คุณได้รับมอบหมายให้ดูแลคุณ $patient_name ".(!empty($_POST['room_id']) ? "ที่ห้องตรวจ ".$room_name:"");
             $action_by = 'conuter';
             break;
 
