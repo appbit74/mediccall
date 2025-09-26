@@ -316,6 +316,16 @@ $(document).ready(function () {
     $(document).on("click", ".btn-assign-doctor", function () {
         $("#doctor-modal-patient-id").val($(this).data("id"));
         $("#doctor-modal-patient-name").text($(this).data("name"));
+        $.getJSON("api/data_handler.php?get=rooms", (rooms) => {
+            const sel = $("#room-select").empty();
+            if (rooms.length > 0) {
+                $.each(rooms, (i, r) =>
+                    sel.append(`<option value="${r.uuid}">${r.name}</option>`)
+                );
+            } else {
+                sel.append('<option value="">ไม่มีห้องว่าง</option>');
+            }
+        });
         $.getJSON("api/data_handler.php?get=doctors", (doctors) => {
             const sel = $("#doctor-select").empty();
             $.each(doctors, (i, d) =>
