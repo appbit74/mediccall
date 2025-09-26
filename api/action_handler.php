@@ -158,7 +158,7 @@ try {
 
     // -- ตรวจสอบว่ามีข้อความที่ต้องส่งหรือไม่ ก่อนเรียกใช้ฟังก์ชัน --
     if (!empty($title)) {
-        pushNotifications($pdo, $title, $body, $patient_id, $action_by, $user);
+        pushNotifications($pdo, $title, $body, $patient_id, $user);
     }
 
     echo json_encode(['status' => 'success', 'message' => 'Action completed successfully']);
