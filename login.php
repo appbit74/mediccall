@@ -70,7 +70,7 @@ if (isset($_SESSION['err_message'])) {
             <div class="card login-card">
                 <div class="login-header">
                     <img src="https://salary.psrehabccenter.com/datas/images/logo.png" alt="PS Rehab Center Logo" class="logo">
-                    <h4>PS Medical Infomation System</h4>
+                    <h4>PS Medical Information System</h4>
                 </div>
                 <div class="card-body p-4 p-md-5">
                     <?php if ($error_message): ?>

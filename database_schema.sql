@@ -68,3 +68,4 @@ INSERT INTO `rooms` (`uuid`, `name`, `is_active`) VALUES
 ('room-uuid-13', 'Room 10', 1), ('room-uuid-14', 'Room 11', 1),
 ('room-uuid-15', 'Room 12', 1);
 
+ALTER TABLE patient_queue ADD patient_short_name VARCHAR(255) NULL;

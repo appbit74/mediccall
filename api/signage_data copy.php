@@ -23,7 +23,7 @@ try {
     }
 
     // 2. ดึงข้อมูลคนไข้ทั้งหมดที่อยู่ในสถานะเกี่ยวข้องกับแพทย์
-    $sql = "SELECT patient_name, patient_short_name, assigned_room_name, status, assigned_doctor_id 
+    $sql = "SELECT patient_name, assigned_room_name, status, assigned_doctor_id 
             FROM patient_queue 
             WHERE status IN ('in_therapy', 'waiting_doctor') 
             AND assigned_doctor_id IS NOT NULL";
@@ -35,36 +35,18 @@ try {
         $doctorId = $patient['assigned_doctor_id'];
         if (isset($allDoctors[$doctorId])) {
             
-            // $short_name = 'คุณ '.mb_substr($patient['patient_name'], 0, 3, 'UTF-8');
-            $short_name = $patient['patient_short_name'];
-
-            // <<-- [ส่วนที่เพิ่มเข้ามา] สร้างข้อความสถานะการเรียก -->>
-            $call_status_text = '';
-            switch ($patient['status']) {
-                case "waiting_therapy":
-                    $call_status_text = "รอทำกายภาพ";
-                    break;
-                case "in_therapy":
-                    $call_status_text = "กำลังทำกายภาพ";
-                    break;
-                case "waiting_doctor":
-                    $call_status_text = "รอตรวจ";
-                    break;
-                default:
-                    $call_status_text = $patient['status'];
-                }
-            // <<-- สิ้นสุดส่วนที่เพิ่มเข้ามา -->>
+            // <<-- [แก้ไข] ตัดชื่อคนไข้ให้เหลือ 4 ตัวอักษร -->>
+            $short_name = mb_substr($patient['patient_name'], 0, 3, 'UTF-8');
 
             $allDoctors[$doctorId]['patients'][] = [
-                'patient_name' => $short_name,
+                'patient_name' => $short_name, // <<-- ใช้ตัวแปรชื่อที่ตัดแล้ว
                 'room_name' => $patient['assigned_room_name'],
-                'status' => $patient['status'],
-                'call_status' => $call_status_text // <<-- เพิ่ม field ใหม่
+                'status' => $patient['status']
             ];
         }
     }
 
-    // 4. คัดกรองเอาเฉพาะแพทย์ที่มีคนไข้
+    // 4. [ใหม่] คัดกรองเอาเฉพาะแพทย์ที่มีคนไข้ (patients array không rỗng)
     $activeDoctors = array_filter($allDoctors, function($doctor) {
         return !empty($doctor['patients']);
     });
@@ -77,3 +59,4 @@ try {
     echo json_encode(['error' => $e->getMessage()]);
 }
 ?>
+
